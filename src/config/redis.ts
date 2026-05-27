@@ -7,6 +7,7 @@ import { config } from './index';
  */
 const redisOptions: import('ioredis').RedisOptions = {
   maxRetriesPerRequest: null, // Required by BullMQ
+  family: 0, // Railway internal network uses IPv6, family 0 auto-detects IPv4/IPv6
   retryStrategy(times: number) {
     const delay = Math.min(times * 200, 5000);
     return delay;
