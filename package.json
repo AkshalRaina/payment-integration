@@ -1,7 +1,7 @@
 {
-  "name": "payment-processing-system",
+  "name": "zenpay",
   "version": "1.0.0",
-  "description": "Production-grade payment processing simulator with idempotency, retry logic, circuit breaker, and webhook handling",
+  "description": "Payment processing system simulator with idempotent APIs, webhook handling, and background workers.",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
