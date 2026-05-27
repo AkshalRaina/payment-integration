@@ -59,6 +59,11 @@ export async function closeQueues(): Promise<void> {
 export async function checkQueueHealth(): Promise<boolean> {
   try {
     // Check if the queue's Redis connection is alive
+    /*
+    That's why checking the queue's health and checking its
+    Redis connection are effectively the same thing — if Redis dies,
+    the queue dies too, because the queue lives inside Redis.
+    */
     await paymentProcessQueue.client;
     return true;
   } catch {

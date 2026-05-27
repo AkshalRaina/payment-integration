@@ -18,7 +18,7 @@ let seenEventIds = new Set();
 
 // Utility: Generate UUID v4 for Idempotency
 function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
@@ -36,7 +36,7 @@ refreshKeyBtn.addEventListener('click', refreshIdempotencyKey);
 // Update UI Stepper
 function updateStepper(status) {
     const steps = ['CREATED', 'PENDING', 'PROCESSING', 'FINAL'];
-    
+
     // Reset all steps
     document.querySelectorAll('.step').forEach(el => {
         el.className = 'step'; // Reset classes
@@ -66,10 +66,10 @@ function updateStepper(status) {
         for (let i = 0; i <= currentIndex; i++) {
             const stepEl = document.querySelector(`[data-step="${steps[i]}"]`);
             if (stepEl) stepEl.classList.add('completed');
-            
+
             if (i > 0) {
                 const lines = document.querySelectorAll('.step-line');
-                if (lines[i-1]) lines[i-1].classList.add('active');
+                if (lines[i - 1]) lines[i - 1].classList.add('active');
             }
         }
     }
@@ -87,8 +87,8 @@ function addLogEntry(event) {
     const entry = document.createElement('div');
     entry.className = 'log-entry';
 
-    const time = new Date(event.createdAt).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
-    
+    const time = new Date(event.createdAt).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
     let actionText = '';
     let details = '';
     let logClass = 'log-content';
@@ -132,11 +132,11 @@ function setLoading(isLoading) {
 // Start Polling Payment Status
 function startPolling(paymentId) {
     if (pollingInterval) clearInterval(pollingInterval);
-    
+
     activePaymentId.textContent = `ID: ${paymentId}`;
     let pollCount = 0;
     const MAX_POLLS = 60; // Stop polling after 60 seconds max
-    
+
     pollingInterval = setInterval(async () => {
         pollCount++;
         if (pollCount > MAX_POLLS) {
@@ -150,12 +150,12 @@ function startPolling(paymentId) {
         try {
             const res = await fetch(`${API_URL}/${paymentId}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            
+
             const json = await res.json();
-            
+
             if (json.success && json.data) {
                 const payment = json.data;
-                
+
                 try {
                     updateStepper(payment.status);
 
@@ -182,14 +182,14 @@ function startPolling(paymentId) {
 // Form Submit Handler
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const amount = parseFloat(document.getElementById('amount').value);
     const currency = document.getElementById('currency').value;
     const customerEmail = document.getElementById('customerEmail').value;
     const idempotencyKey = idempotencyKeyInput.value;
 
     setLoading(true);
-    
+
     // Reset UI
     eventLogs.innerHTML = '';
     seenEventIds.clear();
@@ -200,14 +200,14 @@ form.addEventListener('submit', async (e) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-idempotency-key': idempotencyKey
+                'idempotency-key': idempotencyKey
             },
             body: JSON.stringify({
                 amount,
                 currency,
                 customerEmail,
-                merchantId: 'antigravity_demo_123',
-                description: 'Demo payment from Antigravity UI'
+                merchantId: 'demo_123',
+                description: 'Demo payment from  UI'
             })
         });
 
@@ -215,7 +215,7 @@ form.addEventListener('submit', async (e) => {
 
         if (json.success && json.data) {
             currentPaymentId = json.data.id;
-            
+
             // Log the initial creation event manually if it's not instantly returned
             addLogEntry({
                 id: 'client-init-' + Date.now(),

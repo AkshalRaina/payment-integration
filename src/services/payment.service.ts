@@ -40,6 +40,10 @@ export class PaymentService {
     data: CreatePaymentRequest,
     idempotencyKey?: string,
   ): Promise<PaymentResponse> {
+    // ---------------------------------------------------------
+    // STEP 1: SETUP
+    // Generate a unique ID for the payment and setup a logger.
+    // ---------------------------------------------------------
     const paymentId = generateId();
     const log = createChildLogger({ paymentId });
 
@@ -49,8 +53,16 @@ export class PaymentService {
       merchantId: data.merchantId,
     });
 
-    // Create payment + initial event in a transaction
+    // console.log(`\n[CREATE PAYMENT FLOW] Starting creation for ID: ${paymentId}`);
+
+    // ---------------------------------------------------------
+    // STEP 2: THE TRANSACTION BUBBLE
+    // prisma.$transaction ensures that ALL database operations
+    // inside this block either succeed together or fail together.
+    // ---------------------------------------------------------
     const payment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+
+      // console.log('[CREATE PAYMENT FLOW] 2A. Inserting row into "payments" table...');
       const created = await tx.payment.create({
         data: {
           id: paymentId,
@@ -66,6 +78,7 @@ export class PaymentService {
         },
       });
 
+      // console.log('[CREATE PAYMENT FLOW] 2B. Inserting audit trail into "payment_events" table...');
       // Audit event: CREATED
       await tx.paymentEvent.create({
         data: {
@@ -82,7 +95,8 @@ export class PaymentService {
         },
       });
 
-      // Transition to PENDING
+      // console.log('[CREATE PAYMENT FLOW] 2C. Bumping status to PENDING...');
+      // Transition to PENDING (This also creates a second payment_event internally)
       const pending = await this.transitionStateInTx(
         tx,
         created.id,
@@ -92,13 +106,26 @@ export class PaymentService {
         { reason: 'Payment created and queued for processing' },
       );
 
+      // console.log('[CREATE PAYMENT FLOW] 2D. Transaction complete. Committing to Postgres!');
       return pending;
     });
 
-    // Enqueue for background processing
+    // ---------------------------------------------------------
+    // STEP 3: HANDOFF TO BACKGROUND WORKER
+    // Now that it's safely in Postgres, we tell BullMQ (Redis)
+    // to actually process the payment by talking to the bank.
+    // ---------------------------------------------------------
+    // console.log(`[CREATE PAYMENT FLOW] 3. Enqueuing job in BullMQ for background processing...`);
     await paymentProducer.enqueuePayment(paymentId);
 
-    log.info('Payment created and queued', { status: payment.status });
+    // log.info('Payment created and queued', { status: payment.status });
+
+    // ---------------------------------------------------------
+    // STEP 4: RETURN TO USER
+    // Send the PENDING payment back so the API responds instantly.
+    // ---------------------------------------------------------
+    // console.log(`[CREATE PAYMENT FLOW] 4. Returning response to frontend UI.`);
+    // console.log('Final Payment Object Returned >>', payment);
 
     return this.toPaymentResponse(payment);
   }

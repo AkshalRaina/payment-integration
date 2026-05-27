@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity Payments</title>
+    <title>Payments </title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="app-container">
         <header>
@@ -16,7 +18,7 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
-                <h1>Antigravity Payments</h1>
+                <h1>Zenpay Payments</h1>
             </div>
             <div class="status-indicator">
                 <span class="dot pulse"></span>
@@ -36,7 +38,7 @@
                             <input type="number" id="amount" value="150.50" step="0.01" required>
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="currency">Currency</label>
@@ -54,7 +56,7 @@
 
                     <div class="form-group">
                         <label for="idempotencyKey">
-                            Idempotency Key 
+                            Idempotency Key
                             <span class="tooltip" title="Ensures safe retries without double-charging">ℹ️</span>
                         </label>
                         <div class="input-with-action">
@@ -78,7 +80,7 @@
                     <h2>Live Tracking</h2>
                     <span id="activePaymentId" class="mono-text text-muted">No active payment</span>
                 </div>
-                
+
                 <div class="status-stepper" id="statusStepper">
                     <div class="step" data-step="CREATED">
                         <div class="step-icon">1</div>
@@ -110,4 +112,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>
